@@ -1,0 +1,64 @@
+# Tomcat
+server:
+  port: 8080
+
+# Spring
+spring:
+  main:
+    allow-circular-references: true
+  application:
+    # 应用名称
+    name: base-oauth2
+  profiles:
+    # 环境配置
+    active: @profiles.active@
+  cloud:
+    nacos:
+      # nacos 服务地址
+      server-addr: @nacos.server@
+      username: @nacos.username@
+      password: @nacos.password@
+      discovery:
+        # 注册组
+        group: @nacos.discovery.group@
+        namespace: @nacos.namespace@
+      config:
+        # 配置组
+        group: @nacos.config.group@
+        namespace: @nacos.namespace@
+  config:
+    import:
+      - optional:nacos:application-common.yml
+      - optional:nacos:datasource.yml
+      - optional:nacos:${spring.application.name}.yml
+
+  datasource:
+    dynamic:
+      # 设置默认的数据源或者数据源组,默认值即为 master
+      primary: master
+      datasource:
+        # 主库数据源
+        master:
+          type: ${spring.datasource.type}
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          url: jdbc:mysql://29.0.0.79:3316/bmp_user_center?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true
+          username: root
+          password: CFCA_myAdm_925
+
+logging:
+  level:
+    org.springframework.security: trace
+
+custom:
+  # 自定义认证配置
+  security:
+    # 登录页面路径
+    login-url: http://127.0.0.1:8080/login
+    # 授权确认页面路径
+    consent-page-uri: http://127.0.0.1:8080/oauth2/consent
+    # 不需要认证的地址
+    ignore-uri-list: assets/**, /webjars/**, /login, /consent, /getCaptcha, /favicon.ico, /static/**, /getSmsCaptcha, /login**, /error
+    # 当前认证服务访问的路径
+    issuer-url: http://127.0.0.1:8080
+    # 返回方式REDIRECT 重定向  JSON json格式
+    responseType: REDIRECT
