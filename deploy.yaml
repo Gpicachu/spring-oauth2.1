@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: user-oauth2-sit
+  name: user-oauth2-sit
+  namespace: cssp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-oauth2-sit
+  template:
+    metadata:
+      labels:
+        app: user-oauth2-sit
+      annotations:
+        kubesphere.io/imagepullsecrets: '{"user-oauth2-sit":"gitee-self-sit-iam"}'
+    spec:
+      containers:
+        - env:
+            - name: JAVA_OPTS
+              value: ' -Xmx3800m -Xms1800m '
+          image: ${IPIPE_DOCKER_IMAGE_URL}
+          imagePullPolicy: Always
+          name: user-oauth2-sit
+          ports:
+            - containerPort: 9301
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 4Gi
+            requests:
+              cpu: 1000m
+              memory: 2Gi
+      imagePullSecrets:
+        - name: gitee-self-sit-iam
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: user-oauth2-sit
+  name: user-oauth2-sit
+  namespace: cssp
+spec:
+  ports:
+    - name: http-port
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: user-oauth2-sit
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubesphere.io/creator: admin
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  name: user-oauth2-sit
+  namespace: cssp
+spec:
+  rules:
+    - host: self.sit.cfca.com.cn
+      http:
+        paths:
+          - backend:
+              service:
+                name: user-oauth2-sit
+                port:
+                  number: 8080
+            path: /oauth(/|$)(.*)
+            pathType: Prefix
