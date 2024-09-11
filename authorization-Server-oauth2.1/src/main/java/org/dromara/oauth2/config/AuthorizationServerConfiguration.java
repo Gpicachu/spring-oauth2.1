@@ -74,7 +74,6 @@ public class AuthorizationServerConfiguration {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-//http.securityContext(context -> context.securityContextRepository(redisSecurityContextRepository));
     /**
      * 配置端点的过滤器链
      *

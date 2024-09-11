@@ -8,7 +8,7 @@ import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.ObjectUtils;
-import org.dromara.oauth2.authorization.support.RedisOperator;
+import org.dromara.oauth2.authorization.redis.RedisOperator;
 import org.dromara.oauth2.constant.OAuth2Constant;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.oauth2.jwt.JwtDecoder;

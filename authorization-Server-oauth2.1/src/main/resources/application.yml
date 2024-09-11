@@ -1,49 +1,67 @@
 # Tomcat
 server:
   port: 8080
-
+  # undertow 配置
+  undertow:
+    # HTTP post内容的最大大小。当值为-1时，默认值为大小是无限的
+    max-http-post-size: -1
+    # 以下的配置会影响buffer,这些buffer会用于服务器连接的IO操作,有点类似netty的池化内存管理
+    # 每块buffer的空间大小,越小的空间被利用越充分
+    buffer-size: 512
+    # 是否分配的直接内存
+    direct-buffers: true
+    threads:
+      # 设置IO线程数, 它主要执行非阻塞的任务,它们会负责多个连接, 默认设置每个CPU核心一个线程
+      io: 8
+      # 阻塞任务线程池, 当执行类似servlet请求阻塞操作, undertow会从这个线程池中取得线程,它的值设置取决于系统的负载
+      worker: 256
+        
 # Spring
 spring:
+  mvc:
+    # 设置静态资源路径 防止所有请求都去查静态资源
+    static-path-pattern: /static/**
+    format:
+      date-time: yyyy-MM-dd HH:mm:ss
+  jackson:
+    default-property-inclusion: non_null
   main:
     allow-circular-references: true
   application:
     # 应用名称
     name: base-oauth2
-  profiles:
-    # 环境配置
-    active: @profiles.active@
-  cloud:
-    nacos:
-      # nacos 服务地址
-      server-addr: @nacos.server@
-      username: @nacos.username@
-      password: @nacos.password@
-      discovery:
-        # 注册组
-        group: @nacos.discovery.group@
-        namespace: @nacos.namespace@
-      config:
-        # 配置组
-        group: @nacos.config.group@
-        namespace: @nacos.namespace@
-  config:
-    import:
-      - optional:nacos:application-common.yml
-      - optional:nacos:datasource.yml
-      - optional:nacos:${spring.application.name}.yml
-
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: LEGACYHTML5
+    encoding: UTF-8
+    cache: false
+  # redis通用配置 子服务可以自行配置进行覆盖
   datasource:
-    dynamic:
-      # 设置默认的数据源或者数据源组,默认值即为 master
-      primary: master
-      datasource:
-        # 主库数据源
-        master:
-          type: ${spring.datasource.type}
-          driver-class-name: com.mysql.cj.jdbc.Driver
-          url: jdbc:mysql://29.0.0.79:3316/bmp_user_center?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true
-          username: root
-          password: CFCA_myAdm_925
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://29.0.0.79:3316/bmp_user_center?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true
+    username: root
+    password: CFCA_myAdm_925
+
+  # redis通用配置 子服务可以自行配置进行覆盖
+  data:
+    redis:
+      host: 47.94.203.41
+      port: 6379
+      password: gxj_958421
+      database: 3
+      timeout: 10s
+      ssl.enabled: false
+      lettuce:
+        pool:
+          # 连接池中的最小空闲连接
+          min-idle: 0
+          # 连接池中的最大空闲连接
+          max-idle: 8
+          # 连接池的最大数据库连接数
+          max-active: 4
+          # #连接池最大阻塞等待时间（使用负值表示没有限制）
+          max-wait: -1ms
 
 logging:
   level:
@@ -57,8 +75,29 @@ custom:
     # 授权确认页面路径
     consent-page-uri: http://127.0.0.1:8080/oauth2/consent
     # 不需要认证的地址
-    ignore-uri-list: assets/**, /webjars/**, /login, /consent, /getCaptcha, /favicon.ico, /static/**, /getSmsCaptcha, /login**, /error
+    ignore-uri-list: assets/**, /webjars/**, /login, /consent, /getCaptcha, /favicon.ico, /static/**, /getSmsCaptcha, /login**, /error, /thirdPartyLoginMe
     # 当前认证服务访问的路径
     issuer-url: http://127.0.0.1:8080
     # 返回方式REDIRECT 重定向  JSON json格式
     responseType: REDIRECT
+
+#加密密钥
+rsa:
+  private_key: MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAJ2bG6LMi0IiaQJ0BqbJuS/HNeOEJZPH7dKQKoGg+C/jKi9OejU13hNtBKnxLbCPf3m/Mwju/g1He1mATGvNZSdNx721saBFQga4pd9KXk3BM88hAuTlc8tFv38t8wOGpULQT+OWXxz+kzA+WJbfuRG5yWwTs/yvmEwnKTscaIN/AgMBAAECgYEAkH9DCTGrg8j0qfEioAxWov1r5NqlcSZeXy0aK5sfsRf+9zxmQx7OKtVK71xV3YjTARZRfiFP/3DIILjGWBgKYlxUgKkIFqXum7SkRKPy0rxQbeqtpkTsNA9UngG1JU+iMCoctZKP0JfS2NxyLiFUFMbTdw8Blf1Q4cpTI2x3foECQQDJPbhtFmkNi39VSoKUxElb471G8TW10X+Wz/L9gPTzLdZKhAN6zSaJ9F9jq1WowmSVExXP7W9FLCJVZcIZ+wkhAkEAyH3MEPf+uPbqfe8yt2SylpGCzZZlj6gNPhifSs4SebNle6CBF3/rKHgx+PB5tAtQZUr0Tc+L5SYDRfHwforYnwJAdZAXA7OJ353U33DN5DbfXE0pMB6N8A/ZZ7NIEwyZDM+EVrfUiJL8pq8aYtGfEx2tQOGLZpMg49oqnJT71c2vwQJAf80wt+BdzyoWcBB6E81sye4Xo1Wrh9doGZ04bUbPICTrG9NEduZj0HhN4pHoAozzwp30/WS/mGKS05NV6lQ3oQJATkW6knkHb30J+9BbLR0l6vH4XuPT1DGBo9suY5TK4MWLfEZYtRfkFaVCzW0kgHIS4dsQai2jN01eomNHrfnLtg==
+  public_key: MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCdmxuizItCImkCdAamybkvxzXjhCWTx+3SkCqBoPgv4yovTno1Nd4TbQSp8S2wj395vzMI7v4NR3tZgExrzWUnTce9tbGgRUIGuKXfSl5NwTPPIQLk5XPLRb9/LfMDhqVC0E/jll8c/pMwPliW37kRuclsE7P8r5hMJyk7HGiDfwIDAQAB
+  
+  
+# MyBatisPlus配置
+mybatis-plus:
+  # 多包名使用 例如 org.dromara.**.mapper,org.xxx.**.mapper
+  mapperPackage: org.dromara.**.mapper
+  # 对应的 XML 文件位置
+  mapperLocations: classpath*:mapper/**/*Mapper.xml
+  # 实体扫描，多个package用逗号或者分号分隔
+  typeAliasesPackage: org.dromara.**.domain
+  global-config:
+    dbConfig:
+      # 主键类型
+      # AUTO 自增 NONE 空 INPUT 用户输入 ASSIGN_ID 雪花 ASSIGN_UUID 唯一 UUID
+      # 如需改为自增 需要将数据库表全部设置为自增
+      idType: AUTO

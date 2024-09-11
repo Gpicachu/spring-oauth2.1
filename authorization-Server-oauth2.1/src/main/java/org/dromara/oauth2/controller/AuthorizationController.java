@@ -86,6 +86,15 @@ public class AuthorizationController {
         return view;
     }
 
+    @GetMapping("/thirdPartyLoginMe")
+    public ModelAndView thirdPartyLoginMe(HttpServletRequest request, HttpServletResponse response) {
+        ModelAndView view = new ModelAndView();
+        String code = request.getParameter("code");
+        view.addObject("code", code);
+        view.setViewName("/thirdPartyLoginMe");
+        return view;
+    }
+
 
     @GetMapping("/org/dromara/oauth2/userinfo")
     @ResponseBody

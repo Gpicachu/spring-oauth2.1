@@ -1,9 +1,7 @@
-package org.dromara.oauth2.authorization.support;
+package org.dromara.oauth2.authorization.redis;
 
 import jakarta.annotation.Resource;
-import lombok.RequiredArgsConstructor;
 import org.dromara.oauth2.utils.JsonUtils;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
